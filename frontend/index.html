@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Screening Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #1E3A8A;
+            --primary-dark: #1E293B;
+            --secondary: #4F46E5;
+            --accent: #22D3EE;
+            --background: #F8FAFC;
+            --card-bg: rgba(255, 255, 255, 0.95);
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            --border: #E2E8F0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, var(--background), #E2E8F0);
+            min-height: 100vh;
+            margin: 0;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 80rem;
+            margin: 0 auto;
+        }
+
+        h1 {
+            font-family: 'Poppins', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 600;
+            color: var(--primary-dark);
+            text-align: center;
+            margin-bottom: 2rem;
+            letter-spacing: -0.025em;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 0.5rem;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 0.5rem;
+            margin-bottom: 2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #64748B;
+            border-radius: 0.75rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tab-btn:hover {
+            background: rgba(0, 0, 0, 0.05);
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            background: var(--secondary);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Form Card */
+        .form-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        label {
+            font-size: 1rem;
+            font-weight: 500;
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            font-size: 0.95rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        button {
+            font-family: 'Inter', sans-serif;
+            font-weight: 500;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .primary-btn {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .send-email-btn {
+            background: #10B981;
+            color: white;
+        }
+
+        .send-email-btn:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .send-email-btn:disabled {
+            background: #D1D5DB;
+            cursor: not-allowed;
+        }
+
+        .loading-spinner {
+            display: none;
+        }
+
+        .loading .loading-spinner {
+            display: inline-block;
+        }
+
+        /* Results Card */
+        .results-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .score-bar {
+            height: 0.5rem;
+            border-radius: 0.25rem;
+            transition: width 0.5s ease-in-out;
+        }
+
+        .score-excellent { background: linear-gradient(90deg, #10B981, #34D399); }
+        .score-good { background: linear-gradient(90deg, #3B82F6, #60A5FA); }
+        .score-average { background: linear-gradient(90deg, #F59E0B, #FBBF24); }
+        .score-poor { background: linear-gradient(90deg, #EF4444, #F87171); }
+
+        .badge {
+            padding: 0.5rem 1rem;
+            border-radius: 1rem;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .badge-accepted { background: #DCFCE7; color: #166534; }
+        .badge-rejected { background: #FEE2E2; color: #991B1B; }
+        .badge-pending { background: #FEF3C7; color: #92400E; }
+
+        .skill-tag, .missing-skill-tag, .strength-tag {
+            padding: 0.4rem 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.85rem;
+            margin: 0.25rem;
+            font-weight: 500;
+        }
+
+        .skill-tag { background: #EFF6FF; color: #1E40AF; }
+        .missing-skill-tag { background: #FEF2F2; color: #DC2626; }
+        .strength-tag { background: #F0FDF4; color: #166534; }
+
+        .success-toast {
+            position: fixed;
+            top: 1.5rem;
+            right: 1.5rem;
+            background: var(--secondary);
+            color: white;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            z-index: 1000;
+        }
+
+        .success-toast.show {
+            opacity: 1;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            h1 { font-size: 2rem; }
+            .tabs { flex-direction: column; }
+            .tab-btn { padding: 0.75rem; font-size: 1rem; }
+            .form-card, .results-card { padding: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Resume Screening Dashboard</h1>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="single">Single Screening</button>
+            <button class="tab-btn" data-tab="pdf">PDF Screening</button>
+            <button class="tab-btn" data-tab="batch">Batch Screening</button>
+        </div>
+
+        <!-- Form -->
+        <div class="form-card">
+            <div id="single" class="tab-content active">
+                <div class="mb-6">
+                    <label>Job Description</label>
+                    <textarea id="job-description-single" rows="6" placeholder="Enter job description..."></textarea>
+                </div>
+                <div class="mb-6">
+                    <label>Resume Text</label>
+                    <textarea id="resume-text" rows="6" placeholder="Enter resume text..."></textarea>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label>Candidate ID (Optional)</label>
+                        <input type="text" id="candidate-id-single" placeholder="Enter candidate ID...">
+                    </div>
+                    <div>
+                        <label>Position Title (Optional)</label>
+                        <input type="text" id="position-title-single" placeholder="Enter position title...">
+                    </div>
+                </div>
+                <button id="screen-single" class="primary-btn">
+                    <span>Screen Resume</span>
+                    <svg class="loading-spinner w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="pdf" class="tab-content">
+                <div class="mb-6">
+                    <label>Job Description</label>
+                    <textarea id="job-description-pdf" rows="6" placeholder="Enter job description..."></textarea>
+                </div>
+                <div class="mb-6">
+                    <label>Resume PDF</label>
+                    <input type="file" id="resume-pdf" accept=".pdf" class="file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-blue-100 file:text-blue-700 hover:file:bg-blue-200">
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label>Candidate ID (Optional)</label>
+                        <input type="text" id="candidate-id-pdf" placeholder="Enter candidate ID...">
+                    </div>
+                    <div>
+                        <label>Position Title (Optional)</label>
+                        <input type="text" id="position-title-pdf" placeholder="Enter position title...">
+                    </div>
+                </div>
+                <button id="screen-pdf" class="primary-btn">
+                    <span>Screen PDF Resume</span>
+                    <svg class="loading-spinner w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="batch" class="tab-content">
+                <div class="mb-6">
+                    <label>Job Description</label>
+                    <textarea id="job-description-batch07/06/2025 12:09:54 PM batch" rows="6" placeholder="Enter job description..."></textarea>
+                </div>
+                <div id="batch-candidates" class="mb-6">
+                    <label>Batch Candidates</label>
+                </div>
+                <button id="add-candidate" class="primary-btn mb-6">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Candidate
+                </button>
+                <button id="screen-batch" class="primary-btn">
+                    <span>Screen Batch</span>
+                    <svg class="loading-spinner w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <div id="error" class="hidden mt-4 text-red-600 bg-red-100 p-4 rounded-lg"></div>
+            <div id="success" class="success-toast">Success!</div>
+        </div>
+
+        <!-- Results -->
+        <div id="results" class="results-card hidden"></div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let candidateCount = 0;
+
+        // Tab switching
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                document.getElementById(btn.dataset.tab).classList.add('active');
+                clearMessages();
+            });
+        });
+
+        // Add candidate form
+        document.getElementById('add-candidate').addEventListener('click', () => {
+            candidateCount++;
+            const candidateDiv = document.createElement('div');
+            candidateDiv.className = 'candidate mb-6 p-6 border border-gray-200 rounded-lg bg-gray-50';
+            candidateDiv.innerHTML = `
+                <input type="text" id="candidate-id-${candidateCount}" placeholder="Candidate ID" class="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                <input type="text" id="position-title-${candidateCount}" placeholder="Position Title" class="w-full p-3 mb-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition">
+                <textarea id="resume-text-${candidateCount}" placeholder="Resume Text" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition" rows="4"></textarea>
+            `;
+            document.getElementById('batch-candidates').appendChild(candidateDiv);
+        });
+
+        // Helper functions
+        function getScoreColor(score) {
+            if (score >= 80) return 'score-excellent';
+            if (score >= 60) return 'score-good';
+            if (score >= 40) return 'score-average';
+            return 'score-poor';
+        }
+
+        function getDecisionBadge(decision) {
+            const lowerDecision = decision.toLowerCase();
+            if (lowerDecision.includes('shortlisted') || lowerDecision.includes('qualified')) {
+                return 'badge-accepted';
+            } else if (lowerDecision.includes('not qualified')) {
+                return 'badge-rejected';
+            }
+            return 'badge-pending';
+        }
+
+        function parseDetailedFeedback(feedback) {
+            const lines = feedback.split('\n').filter(line => line.trim());
+            const sections = {};
+            let currentSection = 'general';
+            sections[currentSection] = [];
+
+            lines.forEach(line => {
+                line = line.trim();
+                if (line.includes(':') && !line.startsWith('-') && !line.startsWith('•')) {
+                    const parts = line.split(':');
+                    if (parts.length === 2 && parts[0].length < 50) {
+                        currentSection = parts[0].toLowerCase().replace(/[^a-z0-9]/g, '_');
+                        sections[currentSection] = [];
+                        if (parts[1].trim()) {
+                            sections[currentSection].push(parts[1].trim());
+                        }
+                        return;
+                    }
+                }
+                if (line.startsWith('-') || line.startsWith('•')) {
+                    sections[currentSection].push(line.substring(1).trim());
+                } else if (line) {
+                    sections[currentSection].push(line);
+                }
+            });
+
+            return sections;
+        }
+
+        function renderFeedbackSections(feedback) {
+            const sections = parseDetailedFeedback(feedback);
+            let html = '';
+
+            Object.entries(sections).forEach(([section, items]) => {
+                if (items.length === 0) return;
+                
+                const sectionTitle = section.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+                html += `
+                    <div class="mb-4">
+                        <h4 class="font-semibold text-gray-800 mb-2">${sectionTitle}</h4>
+                        <ul class="list-disc list-inside space-y-1 text-gray-600 ml-4">
+                            ${items.map(item => `<li>${item}</li>`).join('')}
+                        </ul>
+                    </div>
+                `;
+            });
+
+            return html || `<p class="text-gray-600">${feedback}</p>`;
+        }
+
+        function clearMessages() {
+            document.getElementById('error').classList.add('hidden');
+            document.getElementById('error').textContent = '';
+            document.getElementById('success').classList.remove('show');
+        }
+
+        function showSuccess(message) {
+            const success = document.getElementById('success');
+            success.textContent = message;
+            success.classList.add('show');
+            setTimeout(() => success.classList.remove('show'), 3000);
+        }
+
+        function showError(message) {
+            const error = document.getElementById('error');
+            error.textContent = message;
+            error.classList.remove('hidden');
+        }
+
+        function validateForm(jobDescription, resumeText, pdfFile, candidates, tab) {
+            if (!jobDescription.trim()) {
+                showError('Job description is required.');
+                return false;
+            }
+            if (tab === 'single' && !resumeText.trim()) {
+                showError('Resume text is required for single screening.');
+                return false;
+            }
+            if (tab === 'pdf' && !pdfFile) {
+                showError('PDF resume is required for PDF screening.');
+                return false;
+            }
+            if (tab === 'batch' && candidates.length === 0) {
+                showError('At least one candidate is required for batch screening.');
+                return false;
+            }
+            return true;
+        }
+
+        async function sendConfirmationEmail(candidate) {
+            const btn = document.getElementById(`send-email-${candidate.candidate_id}`);
+            btn.classList.add('loading');
+            btn.disabled = true;
+            clearMessages();
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/send-confirmation`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        candidate_id: candidate.candidate_id,
+                        position_title: candidate.position_title,
+                        response: {
+                            candidate_id: candidate.candidate_id,
+                            response: candidate.response,
+                            detailed_feedback: candidate.detailed_feedback,
+                            screening_metadata: candidate.screening_metadata
+                        },
+                        candidate_name: candidate.candidate_name,
+                        candidate_email: candidate.candidate_email
+                    })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    showSuccess(data.message || 'Email sent successfully!');
+                    console.log('Email sent:', data);
+                } else {
+                    showError(data.message || 'Failed to send email');
+                    console.error('Email sending error:', data.message);
+                }
+            } catch (err) {
+                showError('Failed to connect to server. Is the backend running?');
+                console.error('Email sending network error:', err);
+            } finally {
+                btn.classList.remove('loading');
+                btn.disabled = false;
+            }
+        }
+
+        function renderSingleResults(data) {
+            const results = document.getElementById('results');
+            results.innerHTML = `
+                <div class="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-2">📋 Screening Results</h2>
+                    <div class="flex items-center space-x-4 text-sm text-gray-600">
+                        <span>🕒 Processed in ${data.processing_time.toFixed(2)}s</span>
+                        <span class="badge ${getDecisionBadge(data.response)}">${data.response}</span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">👤 Candidate Information</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <span class="text-sm font-medium text-gray-500">ID:</span>
+                                <span class="ml-2 text-gray-800">${data.candidate_id}</span>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-500">Position:</span>
+                                <span class="ml-2 text-gray-800">${data.position_title}</span>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-500">Name:</span>
+                                <span class="ml-2 text-gray-800">${data.candidate_name || 'N/A'}</span>
+                            </div>
+                            <div>
+                                <span class="text-sm font-medium text-gray-500">Email:</span>
+                                <span class="ml-2 text-gray-800">${data.candidate_email || 'N/A'}</span>
+                            </div>
+                        </div>
+                        ${data.candidate_email ? `
+                        <button id="send-email-${data.candidate_id}" class="send-email-btn mt-4">
+                            <span>Send Confirmation Email</span>
+                            <svg class="loading-spinner w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                            </svg>
+                        </button>
+                        ` : '<p class="text-red-600 mt-4">No email available to send confirmation.</p>'}
+                    </div>
+
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-gray-800 mb-4">📊 Score Overview</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm font-medium text-gray-600">Skills Match</span>
+                                    <span class="text-sm font-bold text-gray-800">${data.skill_score}/100</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="score-bar ${getScoreColor(data.skill_score)}" style="width: ${data.skill_score}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm font-medium text-gray-600">Experience</span>
+                                    <span class="text-sm font-bold text-gray-800">${data.experience_score}/100</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="score-bar ${getScoreColor(data.experience_score)}" style="width: ${data.experience_score}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm font-medium text-gray-600">Cultural Fit</span>
+                                    <span class="text-sm font-bold text-gray-800">${data.cultural_fit_score}/100</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="score-bar ${getScoreColor(data.cultural_fit_score)}" style="width: ${data.cultural_fit_score}%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+                    <div class="bg-blue-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-blue-800 mb-4">✅ Technical Skills</h3>
+                        <div class="flex flex-wrap">
+                            ${data.technical_skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                        </div>
+                        ${data.technical_skills.length === 0 ? '<p class="text-gray-500 text-sm">No technical skills identified</p>' : ''}
+                    </div>
+
+                    <div class="bg-red-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-red-800 mb-4">❌ Missing Skills</h3>
+                        <div class="flex flex-wrap">
+                            ${data.missing_skills.map(skill => `<span class="missing-skill-tag">${skill}</span>`).join('')}
+                        </div>
+                        ${data.missing_skills.length === 0 ? '<p class="text-gray-500 text-sm">No missing skills identified</p>' : ''}
+                    </div>
+
+                    <div class="bg-green-50 rounded-lg p-6">
+                        <h3 class="text-lg font-semibold text-green-800 mb-4">💪 Strengths</h3>
+                        <div class="flex flex-wrap">
+                            ${data.strengths.map(strength => `<span class="strength-tag">${strength}</span>`).join('')}
+                        </div>
+                        ${data.strengths.length === 0 ? '<p class="text-gray-500 text-sm">No specific strengths identified</p>' : ''}
+                    </div>
+                </div>
+
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h3 class="text-lg font-semibold text-gray-800 mb-4">📝 Detailed Feedback</h3>
+                    ${renderFeedbackSections(data.detailed_feedback)}
+                </div>
+
+                ${data.extracted_resume_text ? `
+                <div class="bg-yellow-50 rounded-lg p-6 mt-6">
+                    <h3 class="text-lg font-semibold text-yellow-800 mb-4">📄 Extracted Resume Text</h3>
+                    <div class="text-sm text-gray-700 max-h-40 overflow-y-auto">
+                        ${data.extracted_resume_text.replace(/\n/g, '<br>')}
+                    </div>
+                </div>
+                ` : ''}
+            `;
+            results.classList.remove('hidden');
+
+            // Attach email button event listener
+            if (data.candidate_email) {
+                document.getElementById(`send-email-${data.candidate_id}`).addEventListener('click', () => sendConfirmationEmail(data));
+            }
+        }
+
+        function renderBatchResults(data) {
+            const results = document.getElementById('results');
+            results.innerHTML = `
+                <div class="bg-gradient-to-r from-purple-50 to-pink-50 rounded-lg p-6 mb-6">
+                    <h2 class="text-2xl font-bold text-gray-800 mb-4">📊 Batch Screening Results</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-purple-600">${data.summary.total_candidates}</div>
+                            <div class="text-sm text-gray-600">Total Candidates</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-green-600">${data.summary.matches_found}</div>
+                            <div class="text-sm text-gray-600">Matches Found</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-blue-600">${data.summary.match_rate.toFixed(1)}%</div>
+                            <div class="text-sm text-gray-600">Match Rate</div>
+                        </div>
+                        <div class="text-center">
+                            <div class="text-2xl font-bold text-orange-600">${data.summary.avg_skill_score.toFixed(1)}</div>
+                            <div class="text-sm text-gray-600">Avg Skill Score</div>
+                        </div>
+                    </div>
+                </div>
+
+                ${data.results.map((result, index) => `
+                    <div class="bg-white border border-gray-200 rounded-lg p-6 mb-6 shadow-sm">
+                        <div class="flex justify-between items-start mb-4">
+                            <div>
+                                <h3 class="text-xl font-semibold text-gray-800">${result.candidate_id}</h3>
+                                <p class="text-gray-600">${result.position_title}</p>
+                                <p class="text-gray-600">Name: ${result.candidate_name || 'N/A'}</p>
+                                <p class="text-gray-600">Email: ${result.candidate_email || 'N/A'}</p>
+                            </div>
+                            <div class="flex flex-col items-end space-y-2">
+                                <span class="badge ${getDecisionBadge(result.response)}">${result.response}</span>
+                                ${result.candidate_email ? `
+                                <button id="send-email-${result.candidate_id}" class="send-email-btn">
+                                    <span>Send Confirmation Email</span>
+                                    <svg class="loading-spinner w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24">
+                                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z"></path>
+                                    </svg>
+                                </button>
+                                ` : '<p class="text-red-600">No email available to send confirmation.</p>'}
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm font-medium text-gray-600">Skills</span>
+                                    <span class="text-sm font-bold text-gray-800">${result.skill_score}/100</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="score-bar ${getScoreColor(result.skill_score)}" style="width: ${result.skill_score}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm font-medium text-gray-600">Experience</span>
+                                    <span class="text-sm font-bold text-gray-800">${result.experience_score}/100</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="score-bar ${getScoreColor(result.experience_score)}" style="width: ${result.experience_score}%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between items-center mb-1">
+                                    <span class="text-sm font-medium text-gray-600">Cultural Fit</span>
+                                    <span class="text-sm font-bold text-gray-800">${result.cultural_fit_score}/100</span>
+                                </div>
+                                <div class="w-full bg-gray-200 rounded-full h-2">
+                                    <div class="score-bar ${getScoreColor(result.cultural_fit_score)}" style="width: ${result.cultural_fit_score}%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div>
+                                <h4 class="font-medium text-gray-700 mb-2">Technical Skills</h4>
+                                <div class="flex flex-wrap">
+                                    ${result.technical_skills.map(skill => `<span class="skill-tag">${skill}</span>`).join('')}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-700 mb-2">Missing Skills</h4>
+                                <div class="flex flex-wrap">
+                                    ${result.missing_skills.map(skill => `<span class="missing-skill-tag">${skill}</span>`).join('')}
+                                </div>
+                            </div>
+                            <div>
+                                <h4 class="font-medium text-gray-700 mb-2">Strengths</h4>
+                                <div class="flex flex-wrap">
+                                    ${result.strengths.map(strength => `<span class="strength-tag">${strength}</span>`).join('')}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="font-medium text-gray-700 mb-2">Detailed Feedback</h4>
+                            ${renderFeedbackSections(result.detailed_feedback)}
+                        </div>
+                    </div>
+                `).join('')}
+            `;
+            results.classList.remove('hidden');
+
+            // Attach email button event listeners
+            data.results.forEach(result => {
+                if (result.candidate_email) {
+                    document.getElementById(`send-email-${result.candidate_id}`).addEventListener('click', () => sendConfirmationEmail(result));
+                }
+            });
+        }
+
+        document.getElementById('screen-single').addEventListener('click', async () => {
+            const jobDescription = document.getElementById('job-description-single').value;
+            const resumeText = document.getElementById('resume-text').value;
+            const candidateId = document.getElementById('candidate-id-single').value;
+            const positionTitle = document.getElementById('position-title-single').value;
+
+            if (!validateForm(jobDescription, resumeText, null, [], 'single')) return;
+
+            const btn = document.getElementById('screen-single');
+            btn.classList.add('loading');
+            clearMessages();
+
+            try {
+                console.log('Sending single screening request...');
+                const response = await fetch(`${API_BASE_URL}/screening/single`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        job_description: jobDescription,
+                        resume: resumeText,
+                        candidate_id: candidateId || undefined,
+                        position_title: positionTitle || undefined
+                    })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    renderSingleResults(data);
+                    showSuccess('Screening completed successfully!');
+                    console.log('Single screening response:', data);
+                } else {
+                    showError(data.error || 'Screening failed');
+                    console.error('Single screening error:', data.error);
+                }
+            } catch (err) {
+                showError('Failed to connect to server. Is the backend running?');
+                console.error('Single screening network error:', err);
+            } finally {
+                btn.classList.remove('loading');
+            }
+        });
+
+        document.getElementById('screen-pdf').addEventListener('click', async () => {
+            const jobDescription = document.getElementById('job-description-pdf').value;
+            const pdfFile = document.getElementById('resume-pdf').files[0];
+            const candidateId = document.getElementById('candidate-id-pdf').value;
+            const positionTitle = document.getElementById('position-title-pdf').value;
+
+            if (!validateForm(jobDescription, null, pdfFile, [], 'pdf')) return;
+
+            const btn = document.getElementById('screen-pdf');
+            btn.classList.add('loading');
+            clearMessages();
+
+            try {
+                console.log('Sending PDF screening request...');
+                const formData = new FormData();
+                formData.append('resume', pdfFile);
+                formData.append('job_description', jobDescription);
+                if (candidateId) formData.append('candidate_id', candidateId);
+                if (positionTitle) formData.append('position_title', positionTitle);
+
+                const response = await fetch(`${API_BASE_URL}/screening/pdf`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    renderSingleResults(data);
+                    showSuccess('PDF screening completed successfully!');
+                    console.log('PDF screening response:', data);
+                } else {
+                    showError(data.error || 'PDF screening failed');
+                    console.error('PDF screening error:', data.error);
+                }
+            } catch (err) {
+                showError('Failed to connect to server. Is the backend running?');
+                console.error('PDF screening network error:', err);
+            } finally {
+                btn.classList.remove('loading');
+            }
+        });
+
+        document.getElementById('screen-batch').addEventListener('click', async () => {
+            const jobDescription = document.getElementById('job-description-batch').value;
+            const candidates = [];
+            document.querySelectorAll('.candidate').forEach((_, index) => {
+                const id = document.getElementById(`candidate-id-${index + 1}`).value;
+                const position = document.getElementById(`position-title-${index + 1}`).value;
+                const resume = document.getElementById(`resume-text-${index + 1}`).value;
+                if (resume.trim()) {
+                    candidates.push({ id: id || undefined, position: position || undefined, resume });
+                }
+            });
+
+            if (!validateForm(jobDescription, null, null, candidates, 'batch')) return;
+
+            const btn = document.getElementById('screen-batch');
+            btn.classList.add('loading');
+            clearMessages();
+
+            try {
+                console.log('Sending batch screening request...');
+                const response = await fetch(`${API_BASE_URL}/screening/batch`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        job_description: jobDescription,
+                        candidates
+                    })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    renderBatchResults(data);
+                    showSuccess('Batch screening completed successfully!');
+                    console.log('Batch screening response:', data);
+                } else {
+                    showError(data.error || 'Batch screening failed');
+                    console.error('Batch screening error:', data.error);
+                }
+            } catch (err) {
+                showError('Failed to connect to server. Is the backend running?');
+                console.error('Batch screening network error:', err);
+            } finally {
+                btn.classList.remove('loading');
+            }
+        });
+    </script>
+</body>
+</html>
