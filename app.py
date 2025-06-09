@@ -10,8 +10,8 @@ import requests
 import json
 
 # Set up environment variables (replace with your actual API keys)
-os.environ["OPENAI_API_KEY"] = ""
-os.environ["SERPAPI_API_KEY"] = ""
+OPENAI_API_KEY = os.environ.get('OPENAI_API_KEY')
+
 
 # Initialize Open AI LLM
 llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
