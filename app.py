@@ -10,8 +10,8 @@ import requests
 import json
 
 # Set up environment variables (replace with your actual API keys)
-os.environ["OPENAI_API_KEY"] = "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"
-os.environ["SERPAPI_API_KEY"] = "7722a85dc49518ba6a608deeb0f46d501eb7541a9dc6025cae06747c1888f944"
+os.environ["OPENAI_API_KEY"] = ""
+os.environ["SERPAPI_API_KEY"] = ""
 
 # Initialize Open AI LLM
 llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
